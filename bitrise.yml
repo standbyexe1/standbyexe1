@@ -1,0 +1,33 @@
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+workflows:
+  tmate_debug:
+    steps:
+      - script@1:
+          title: Install tmate and start session
+          inputs:
+            content: |-
+              #!/bin/bash
+              set -ex
+              brew install tmate
+              tmate new-session -d
+              tmate wait tmate-ready
+              echo "SSH access:"
+              tmate display -p '#{tmate_ssh}'
+              echo "Web access:"
+              tmate display -p '#{tmate_web}'
+              sleep 3600
+
+      - script@1:
+          title: Take Screenshot (optional)
+          inputs:
+            content: |-
+              #!/bin/bash
+              mkdir -p screenshots
+              screencapture -x screenshots/screen.png
+              echo "Screenshot saved to screenshots/screen.png"
+
+      - deploy-to-bitrise-io@2:
+          inputs:
+            deploy_path: screenshots
